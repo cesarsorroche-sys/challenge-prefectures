@@ -15,6 +15,9 @@ const TOTAL_DEPARTMENTS = 96;
 const LOCAL_USERS = [
   { id: "local-user-1", slot: 1, display_name: "Moi" },
   { id: "local-user-2", slot: 2, display_name: "Partenaire" },
+  { id: "local-user-3", slot: 3, display_name: "Membre 3" },
+  { id: "local-user-4", slot: 4, display_name: "Membre 4" },
+  { id: "local-user-5", slot: 5, display_name: "Membre 5" },
 ];
 
 const emptyEntry = () => ({ visited: false, photo: null, photoPath: "", photoDate: "", comment: "", visitDate: "" });
@@ -25,7 +28,13 @@ function readLocalEntries() {
     if (saved) return saved;
     const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || "{}") || {};
     return Object.fromEntries(
-      Object.entries(legacy).map(([code, entry]) => [code, { 1: entry, 2: emptyEntry() }]),
+      Object.entries(legacy).map(([code, entry]) => [code, {
+        1: entry,
+        2: emptyEntry(),
+        3: emptyEntry(),
+        4: emptyEntry(),
+        5: emptyEntry(),
+      }]),
     );
   } catch {
     return {};
@@ -95,7 +104,7 @@ export default function useDepartments() {
   }, []);
 
   useEffect(() => {
-    if (!session) return undefined;
+    if (!isSupabaseConfigured || authLoading) return undefined;
     const initialLoad = window.setTimeout(loadRemoteData, 0);
     const interval = window.setInterval(loadRemoteData, 4000);
     const refresh = () => document.visibilityState === "visible" && loadRemoteData();
@@ -105,7 +114,7 @@ export default function useDepartments() {
       window.clearInterval(interval);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [session, loadRemoteData]);
+  }, [authLoading, loadRemoteData]);
 
   useEffect(() => () => {
     commentTimers.current.forEach((timer) => window.clearTimeout(timer));
@@ -214,7 +223,7 @@ export default function useDepartments() {
   }
 
   const visitedCount = useMemo(
-    () => Object.values(entries).filter((department) => department[1]?.visited || department[2]?.visited).length,
+    () => Object.values(entries).filter((department) => Object.values(department).some((entry) => entry?.visited)).length,
     [entries],
   );
   const progress = Number(((visitedCount / TOTAL_DEPARTMENTS) * 100).toFixed(1));
@@ -226,7 +235,7 @@ export default function useDepartments() {
   async function logout() {
     await apiSignOut();
     setSession(null);
-    setEntries({});
+    await loadRemoteData();
   }
 
   return {
@@ -243,6 +252,7 @@ export default function useDepartments() {
     setComment,
     setActiveSlot,
     isLocalMode: !isSupabaseConfigured,
+    isReadOnly: isSupabaseConfigured && !session,
     isConfigured: isSupabaseConfigured,
     session,
     authLoading,
