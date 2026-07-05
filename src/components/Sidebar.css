@@ -48,9 +48,12 @@
 .legend-card h2 { margin-bottom: 2px; }
 .legend-row { display: flex; align-items: center; gap: 10px; color: #27364f; font-size: 12px; }
 .legend-swatch { width: 20px; height: 20px; border-radius: 4px; }
-.legend-swatch.user-one { background: #94d2a0; }
-.legend-swatch.user-two { background: #85afe8; }
-.legend-swatch.shared { background: #58bfae; }
+.legend-swatch.slot-1 { background: #94d2a0; }
+.legend-swatch.slot-2 { background: #85afe8; }
+.legend-swatch.slot-3 { background: #f4b66d; }
+.legend-swatch.slot-4 { background: #b49ae8; }
+.legend-swatch.slot-5 { background: #ed96bd; }
+.legend-swatch.shared { background: linear-gradient(135deg, #94d2a0 0 20%, #85afe8 20% 40%, #f4b66d 40% 60%, #b49ae8 60% 80%, #ed96bd 80%); }
 .legend-swatch.todo { background: #fff; border: 1px solid #d6dde6; }
 
 .team-card { display: grid; gap: 10px; }
@@ -64,12 +67,16 @@
 .team-member > i { display: grid; place-items: center; width: 29px; height: 29px; flex: 0 0 auto; color: white; border-radius: 50%; font-size: 9px; font-style: normal; font-weight: 800; }
 .team-member.slot-1 > i { background: #58ad69; }
 .team-member.slot-2 > i { background: #558bce; }
+.team-member.slot-3 > i { background: #d88935; }
+.team-member.slot-4 > i { background: #8064bd; }
+.team-member.slot-5 > i { background: #c65b8d; }
 .team-member > span { display: grid; min-width: 0; flex: 1; }
 .team-member strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .team-member small { color: #8693a4; font-size: 9px; }
 .team-member b { color: #5b6b80; font-size: 8px; text-transform: uppercase; }
 .demo-notice { margin: 0; color: #8693a4; font-size: 9px; line-height: 1.35; }
 .logout-button { padding: 4px; color: #6c7b8d; background: none; border: 0; font-size: 10px; cursor: pointer; }
+.login-button { padding: 9px 10px; color: white; background: #2d7bdc; border: 0; border-radius: 8px; font: inherit; font-size: 10px; font-weight: 750; cursor: pointer; }
 
 .filters-card { display: grid; gap: 14px; }
 .switch-row { display: flex; align-items: center; justify-content: space-between; color: #27364f; font-size: 12px; cursor: pointer; }
@@ -89,6 +96,9 @@
 .photo-thumb > i { position: absolute; right: 4px; bottom: 4px; display: grid; place-items: center; width: 19px; height: 19px; color: white; border: 2px solid white; border-radius: 50%; font-size: 7px; font-style: normal; font-weight: 800; }
 .photo-thumb.slot-1 > i { background: #58ad69; }
 .photo-thumb.slot-2 > i { background: #558bce; }
+.photo-thumb.slot-3 > i { background: #d88935; }
+.photo-thumb.slot-4 > i { background: #8064bd; }
+.photo-thumb.slot-5 > i { background: #c65b8d; }
 .photos-button { width: 100%; padding: 10px 6px; color: #2672d0; background: white; border: 1px solid #7eabe6; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
 
 @media (max-height: 820px) {
