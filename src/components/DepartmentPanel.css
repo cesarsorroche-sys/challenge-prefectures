@@ -101,3 +101,56 @@
   .upload-zone { height: 230px; }
   .notes-card textarea { min-height: 52px; }
 }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .department-panel {
+    position: absolute;
+    z-index: 15;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: 8px;
+    gap: 10px;
+    width: auto;
+    max-height: 41dvh;
+    padding: 15px 14px 13px;
+    overflow-y: auto;
+    border-radius: 17px;
+    box-shadow: 0 -5px 24px rgba(24, 53, 85, .16);
+  }
+
+  .department-panel::before {
+    content: "";
+    position: sticky;
+    top: -9px;
+    display: block;
+    width: 38px;
+    height: 4px;
+    margin: -6px auto 0;
+    flex: 0 0 auto;
+    background: #ced7e2;
+    border-radius: 999px;
+  }
+
+  .department-header { flex: 0 0 auto; }
+  .department-header h2 { margin-bottom: 4px; font-size: 17px; }
+  .department-header p { font-size: 11px; }
+  .close-panel { width: 34px; height: 34px; flex: 0 0 auto; }
+
+  .member-statuses {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .member-statuses::-webkit-scrollbar { display: none; }
+  .member-status { min-width: 112px; flex: 0 0 auto; padding: 6px 7px; }
+
+  .photo-preview { height: 230px; }
+  .upload-zone { min-height: 190px; height: 27dvh; }
+  .notes-card textarea { min-height: 58px; }
+  .readonly-notice { margin-top: 2px; }
+  .empty-panel { display: none; }
+
+  .photo-lightbox { padding: 16px; }
+  .photo-lightbox > button { top: 12px; right: 16px; }
+}
