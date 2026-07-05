@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import "./AuthScreen.css";
 
-export default function AuthScreen({ onSendMagicLink, error }) {
+export default function AuthScreen({ onSendMagicLink, error, onBrowse }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,8 @@ export default function AuthScreen({ onSendMagicLink, error }) {
             </button>
           </form>
         )}
-        <small>Les deux premiers comptes créés deviennent les deux membres du challenge.</small>
+        <small>Les cinq premiers comptes créés deviennent les cinq membres du challenge.</small>
+        <button className="auth-browse" type="button" onClick={onBrowse}>Continuer en lecture seule</button>
       </section>
     </main>
   );
