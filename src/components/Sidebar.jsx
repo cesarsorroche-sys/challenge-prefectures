@@ -27,7 +27,9 @@ export default function Sidebar({
   onSelect,
   onSwitchUser,
   onLogout,
+  onLogin,
   isLocalMode,
+  isReadOnly,
   syncing,
 }) {
   const photos = Object.entries(entries).flatMap(([code, department]) =>
@@ -38,8 +40,6 @@ export default function Sidebar({
   );
   const circumference = 2 * Math.PI * 63;
   const dashOffset = circumference * (1 - progress / 100);
-  const firstUser = profiles.find((profile) => profile.slot === 1);
-  const secondUser = profiles.find((profile) => profile.slot === 2);
 
   return (
     <aside className="sidebar">
@@ -70,6 +70,8 @@ export default function Sidebar({
         </div>
         {isLocalMode ? (
           <p className="demo-notice">Mode démonstration : cliquez sur un profil pour changer d’utilisateur.</p>
+        ) : isReadOnly ? (
+          <button className="login-button" type="button" onClick={onLogin}>Se connecter pour contribuer</button>
         ) : (
           <button className="logout-button" type="button" onClick={onLogout}>Se déconnecter</button>
         )}
@@ -82,7 +84,7 @@ export default function Sidebar({
             <circle className="progress-value" cx="75" cy="75" r="63" style={{ strokeDasharray: circumference, strokeDashoffset: dashOffset }} />
           </svg>
           <div className="progress-copy">
-            <span>Départements</span><span>visités ensemble</span>
+            <span>Départements</span><span>visités par l’équipe</span>
             <strong>{visitedCount} / {totalCount}</strong>
             <small>{String(progress).replace(".", ",")} %</small>
           </div>
@@ -91,9 +93,10 @@ export default function Sidebar({
 
       <section className="sidebar-card legend-card">
         <h2>Légende</h2>
-        <div className="legend-row"><i className="legend-swatch user-one" />{firstUser?.display_name || "Utilisateur 1"}</div>
-        <div className="legend-row"><i className="legend-swatch user-two" />{secondUser?.display_name || "Utilisateur 2"}</div>
-        <div className="legend-row"><i className="legend-swatch shared" />Visité par les deux</div>
+        {profiles.map((profile) => (
+          <div className="legend-row" key={profile.id}><i className={`legend-swatch slot-${profile.slot}`} />{profile.display_name}</div>
+        ))}
+        <div className="legend-row"><i className="legend-swatch shared" />Plusieurs membres</div>
         <div className="legend-row"><i className="legend-swatch todo" />À visiter</div>
       </section>
 
