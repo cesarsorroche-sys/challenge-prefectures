@@ -19,15 +19,21 @@
 .department-header p strong { font-weight: 650; }
 .close-panel { width: 28px; height: 28px; padding: 0; color: #7d8797; background: transparent; border: 0; font-size: 26px; line-height: 1; cursor: pointer; }
 
-.member-statuses { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.member-statuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .member-status { display: grid; grid-template-columns: auto minmax(0,1fr); align-items: center; column-gap: 7px; row-gap: 1px; padding: 8px 9px; color: #6f7c8d; background: #f6f8fa; border: 1px solid #e3e8ed; border-radius: 9px; font-size: 10px; }
 .member-status > i { grid-row: 1 / 3; width: 9px; height: 9px; border-radius: 50%; background: #bdc5cf; }
 .member-status > span { overflow: hidden; color: #35465d; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .member-status > b { font-size: 8px; font-weight: 600; }
 .member-status.visited.slot-1 { background: #eff9f1; border-color: #b8ddc0; }
 .member-status.visited.slot-2 { background: #eff5fd; border-color: #bdd1ed; }
+.member-status.visited.slot-3 { background: #fff7ec; border-color: #f1c990; }
+.member-status.visited.slot-4 { background: #f6f1fd; border-color: #cfbfed; }
+.member-status.visited.slot-5 { background: #fdf0f6; border-color: #efbed4; }
 .member-status.visited.slot-1 > i { background: #58ad69; }
 .member-status.visited.slot-2 > i { background: #558bce; }
+.member-status.visited.slot-3 > i { background: #d88935; }
+.member-status.visited.slot-4 > i { background: #8064bd; }
+.member-status.visited.slot-5 > i { background: #c65b8d; }
 .contribution-title { margin: -2px 0 -8px; color: #738197; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
 
 .photo-preview { width: 100%; height: clamp(250px, 42vh, 405px); overflow: hidden; padding: 0; background: #e7eef6; border: 0; border-radius: 12px; cursor: zoom-in; }
@@ -70,9 +76,15 @@
 
 .teammate-contribution { padding: 12px; background: #f5f8fc; border-left: 3px solid #85afe8; border-radius: 7px; }
 .teammate-contribution.slot-1 { border-left-color: #94d2a0; }
+.teammate-contribution.slot-2 { border-left-color: #85afe8; }
+.teammate-contribution.slot-3 { border-left-color: #f4b66d; }
+.teammate-contribution.slot-4 { border-left-color: #b49ae8; }
+.teammate-contribution.slot-5 { border-left-color: #ed96bd; }
 .teammate-contribution > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #314258; font-size: 10px; }
 .teammate-contribution button { padding: 2px; color: #2d72c5; background: none; border: 0; font-size: 9px; font-weight: 700; cursor: pointer; }
 .teammate-contribution p { margin: 8px 0 0; color: #69778a; font-size: 10px; line-height: 1.45; }
+.readonly-notice { margin: auto 0 0; padding: 10px; text-align: center; color: #5f6f82; background: #eef3f8; border-radius: 8px; font-size: 10px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+.no-contribution { margin: 4px 0; color: #8491a2; font-size: 12px; }
 
 .empty-panel { align-items: center; justify-content: center; text-align: center; color: #7e8c9f; }
 .empty-panel h2 { margin: 6px 0; color: #243750; font-size: 19px; }
