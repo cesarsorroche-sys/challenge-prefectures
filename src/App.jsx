@@ -12,22 +12,22 @@ const DEFAULT_DEPARTMENT = { code: "63", nom: "Puy-de-Dôme" };
 export default function App() {
   const [selectedDepartment, setSelectedDepartment] = useState(DEFAULT_DEPARTMENT);
   const [showCorsica, setShowCorsica] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const challenge = useDepartments();
 
   if (challenge.authLoading) {
     return <main className="app-loading"><span /><p>Connexion au challenge…</p></main>;
   }
 
-  if (challenge.isConfigured && !challenge.session) {
-    return <AuthScreen onSendMagicLink={challenge.sendMagicLink} error={challenge.error} />;
+  if (challenge.isConfigured && !challenge.session && showLogin) {
+    return <AuthScreen onSendMagicLink={challenge.sendMagicLink} error={challenge.error} onBrowse={() => setShowLogin(false)} />;
   }
 
   const currentSlot = challenge.currentUser?.slot;
-  const teammate = challenge.profiles.find((profile) => profile.slot !== currentSlot);
   const currentData = selectedDepartment ? challenge.getDepartment(selectedDepartment.code, currentSlot) : null;
-  const teammateData = selectedDepartment && teammate
-    ? challenge.getDepartment(selectedDepartment.code, teammate.slot)
-    : null;
+  const participantData = selectedDepartment
+    ? challenge.profiles.map((profile) => ({ profile, data: challenge.getDepartment(selectedDepartment.code, profile.slot) }))
+    : [];
 
   return (
     <main className="app-shell">
@@ -44,7 +44,9 @@ export default function App() {
         onSelect={setSelectedDepartment}
         onSwitchUser={challenge.setActiveSlot}
         onLogout={challenge.logout}
+        onLogin={() => setShowLogin(true)}
         isLocalMode={challenge.isLocalMode}
+        isReadOnly={challenge.isReadOnly}
         syncing={challenge.syncing}
       />
 
@@ -52,6 +54,7 @@ export default function App() {
         onSelect={setSelectedDepartment}
         selectedCode={selectedDepartment?.code}
         entries={challenge.entries}
+        profiles={challenge.profiles}
         showCorsica={showCorsica}
       />
 
@@ -59,9 +62,9 @@ export default function App() {
         key={`${selectedDepartment?.code || "empty"}-${currentSlot}`}
         department={selectedDepartment}
         data={currentData}
-        teammateData={teammateData}
+        participantData={participantData}
         currentUser={challenge.currentUser}
-        teammate={teammate}
+        isReadOnly={challenge.isReadOnly}
         onClose={() => setSelectedDepartment(null)}
         toggleVisited={challenge.toggleVisited}
         setPhoto={challenge.setPhoto}
