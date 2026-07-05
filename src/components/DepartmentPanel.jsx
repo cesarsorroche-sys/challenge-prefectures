@@ -11,9 +11,9 @@ function formatDate(date) {
 export default function DepartmentPanel({
   department,
   data,
-  teammateData,
+  participantData,
   currentUser,
-  teammate,
+  isReadOnly,
   onClose,
   toggleVisited,
   setPhoto,
@@ -34,6 +34,7 @@ export default function DepartmentPanel({
   }
 
   const info = prefectures[department.code] || {};
+  const contributions = participantData.filter(({ data: memberData }) => memberData?.photo || memberData?.comment);
 
   function handlePhoto(event) {
     const file = event.target.files?.[0];
@@ -52,56 +53,71 @@ export default function DepartmentPanel({
       </header>
 
       <section className="member-statuses" aria-label="Visites des membres">
-        <div className={`member-status slot-${currentUser?.slot}${data?.visited ? " visited" : ""}`}>
-          <i /> <span>{currentUser?.display_name || "Moi"}</span><b>{data?.visited ? "✓ Visité" : "À visiter"}</b>
-        </div>
-        {teammate && (
-          <div className={`member-status slot-${teammate.slot}${teammateData?.visited ? " visited" : ""}`}>
-            <i /> <span>{teammate.display_name}</span><b>{teammateData?.visited ? "✓ Visité" : "À visiter"}</b>
+        {participantData.map(({ profile, data: memberData }) => (
+          <div key={profile.id} className={`member-status slot-${profile.slot}${memberData?.visited ? " visited" : ""}`}>
+            <i /> <span>{profile.display_name}</span><b>{memberData?.visited ? "✓ Visité" : "À visiter"}</b>
           </div>
-        )}
+        ))}
       </section>
 
-      <p className="contribution-title">Ma contribution</p>
-      {data?.photo ? (
+      {isReadOnly ? (
         <>
-          <button className="photo-preview" type="button" onClick={() => setFullscreenPhoto(data.photo)}>
-            <img src={data.photo} alt={`Préfecture de ${info.prefecture}`} />
-          </button>
-          <div className="photo-meta">
-            <span>Photo ajoutée le {formatDate(data.photoDate || data.visitDate)}</span>
-            <button type="button" onClick={() => removePhoto(department.code)}>⌫ <span>Supprimer</span></button>
-          </div>
-          <button className="fullscreen-button" type="button" onClick={() => setFullscreenPhoto(data.photo)}>↗ Voir en plein écran</button>
+          <p className="contribution-title">Contributions de l’équipe</p>
+          {contributions.length ? contributions.map(({ profile, data: memberData }) => (
+            <section className={`teammate-contribution slot-${profile.slot}`} key={profile.id}>
+              <div>
+                <strong>{profile.display_name}</strong>
+                {memberData.photo && <button type="button" onClick={() => setFullscreenPhoto(memberData.photo)}>Voir la photo</button>}
+              </div>
+              {memberData.comment && <p>{memberData.comment}</p>}
+            </section>
+          )) : <p className="no-contribution">Aucune contribution pour ce département.</p>}
+          <p className="readonly-notice">Mode lecture seule</p>
         </>
       ) : (
-        <label className="upload-zone">
-          <span className="upload-camera">▣</span><strong>Ajouter ma photo</strong><small>JPG, PNG ou WEBP</small>
-          <input hidden type="file" accept="image/*" onChange={handlePhoto} disabled={syncing} />
-        </label>
-      )}
+        <>
+          <p className="contribution-title">Ma contribution</p>
+          {data?.photo ? (
+            <>
+              <button className="photo-preview" type="button" onClick={() => setFullscreenPhoto(data.photo)}>
+                <img src={data.photo} alt={`Préfecture de ${info.prefecture}`} />
+              </button>
+              <div className="photo-meta">
+                <span>Photo ajoutée le {formatDate(data.photoDate || data.visitDate)}</span>
+                <button type="button" onClick={() => removePhoto(department.code)}>⌫ <span>Supprimer</span></button>
+              </div>
+              <button className="fullscreen-button" type="button" onClick={() => setFullscreenPhoto(data.photo)}>↗ Voir en plein écran</button>
+            </>
+          ) : (
+            <label className="upload-zone">
+              <span className="upload-camera">▣</span><strong>Ajouter ma photo</strong><small>JPG, PNG ou WEBP</small>
+              <input hidden type="file" accept="image/*" onChange={handlePhoto} disabled={syncing} />
+            </label>
+          )}
 
-      <section className="notes-card">
-        <div className="notes-heading"><strong>Mes notes personnelles</strong><span aria-hidden="true">✎</span></div>
-        <textarea value={data?.comment || ""} placeholder="Ajoutez vos souvenirs, vos impressions…" onChange={(event) => setComment(department.code, event.target.value)} />
-      </section>
+          <section className="notes-card">
+            <div className="notes-heading"><strong>Mes notes personnelles</strong><span aria-hidden="true">✎</span></div>
+            <textarea value={data?.comment || ""} placeholder="Ajoutez vos souvenirs, vos impressions…" onChange={(event) => setComment(department.code, event.target.value)} />
+          </section>
 
-      {data?.photo && (
-        <label className="change-photo-button">▧ Changer ma photo<input hidden type="file" accept="image/*" onChange={handlePhoto} disabled={syncing} /></label>
-      )}
+          {data?.photo && (
+            <label className="change-photo-button">▧ Changer ma photo<input hidden type="file" accept="image/*" onChange={handlePhoto} disabled={syncing} /></label>
+          )}
 
-      <button className={`visited-button${data?.visited ? " is-visited" : ""}`} type="button" disabled={syncing} onClick={() => toggleVisited(department.code)}>
-        {data?.visited ? "✓ J’ai visité ce département" : "Marquer comme visité"}
-      </button>
+          <button className={`visited-button${data?.visited ? " is-visited" : ""}`} type="button" disabled={syncing} onClick={() => toggleVisited(department.code)}>
+            {data?.visited ? "✓ J’ai visité ce département" : "Marquer comme visité"}
+          </button>
 
-      {teammate && (teammateData?.photo || teammateData?.comment) && (
-        <section className={`teammate-contribution slot-${teammate.slot}`}>
-          <div>
-            <strong>Contribution de {teammate.display_name}</strong>
-            {teammateData.photo && <button type="button" onClick={() => setFullscreenPhoto(teammateData.photo)}>Voir la photo</button>}
-          </div>
-          {teammateData.comment && <p>{teammateData.comment}</p>}
-        </section>
+          {contributions.filter(({ profile }) => profile.id !== currentUser?.id).map(({ profile, data: memberData }) => (
+            <section className={`teammate-contribution slot-${profile.slot}`} key={profile.id}>
+              <div>
+                <strong>Contribution de {profile.display_name}</strong>
+                {memberData.photo && <button type="button" onClick={() => setFullscreenPhoto(memberData.photo)}>Voir la photo</button>}
+              </div>
+              {memberData.comment && <p>{memberData.comment}</p>}
+            </section>
+          ))}
+        </>
       )}
 
       {fullscreenPhoto && (
