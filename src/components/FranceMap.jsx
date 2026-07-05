@@ -50,9 +50,11 @@ export default function FranceMap({
   const projection = useMemo(() => {
     if (!visibleGeojson) return null;
     const nextProjection = geoConicConformal();
-    const topSpace = size.width > 600 ? 68 : 88;
+    const isPhonePortrait = size.width <= 700 && size.height > size.width;
+    const topSpace = isPhonePortrait ? 184 : size.width > 600 ? 68 : 88;
+    const bottomEdge = isPhonePortrait ? Math.round(size.height * 0.66) : size.height - 26;
     nextProjection.fitExtent(
-      [[32, topSpace], [size.width - 32, size.height - 26]],
+      [[isPhonePortrait ? 20 : 32, topSpace], [size.width - (isPhonePortrait ? 20 : 32), bottomEdge]],
       visibleGeojson,
     );
     return nextProjection;
