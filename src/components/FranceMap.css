@@ -77,3 +77,41 @@
 @media (max-width: 900px) {
   .map-search-wrap { width: calc(100% - 92px); }
 }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .map-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .map-search-wrap {
+    top: calc(124px + env(safe-area-inset-top));
+    left: 10px;
+    width: calc(100% - 66px);
+  }
+  .map-search {
+    height: 42px;
+    padding: 3px 10px 3px 14px;
+    border-width: 3px;
+  }
+  .map-search input { font-size: 11px; }
+  .map-search svg { width: 18px; }
+  .search-results {
+    max-height: 220px;
+    margin-right: 0;
+    margin-left: 0;
+    overflow-y: auto;
+  }
+
+  .map-controls {
+    top: calc(124px + env(safe-area-inset-top));
+    right: 10px;
+    gap: 7px;
+  }
+  .map-controls button { width: 38px; height: 38px; font-size: 21px; }
+  .home-control { display: none !important; }
+
+  .department-label { font-size: 9px; stroke-width: 1px; }
+}
