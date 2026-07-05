@@ -10,6 +10,7 @@ const normalize = (value = "") =>
 export default function FranceMap({
   onSelect,
   entries = {},
+  profiles = [],
   selectedCode,
   showCorsica,
 }) {
@@ -117,6 +118,25 @@ export default function FranceMap({
         <div className="map-loading">Chargement de la carte…</div>
       ) : (
         <svg className="france-svg" width={size.width} height={size.height} role="img">
+          <defs>
+            {visibleGeojson.features.map((feature) => {
+              const code = feature.properties.code;
+              const visitedSlots = profiles.filter((profile) => entries[code]?.[profile.slot]?.visited).map((profile) => profile.slot);
+              if (visitedSlots.length < 2) return null;
+              return (
+                <linearGradient id={`visit-gradient-${code}`} key={code} x1="0" y1="0" x2="1" y2="1">
+                  {visitedSlots.flatMap((slot, index) => {
+                    const start = `${(index / visitedSlots.length) * 100}%`;
+                    const end = `${((index + 1) / visitedSlots.length) * 100}%`;
+                    return [
+                      <stop key={`${slot}-a`} offset={start} className={`gradient-slot-${slot}`} />,
+                      <stop key={`${slot}-b`} offset={end} className={`gradient-slot-${slot}`} />,
+                    ];
+                  })}
+                </linearGradient>
+              );
+            })}
+          </defs>
           <g
             className="map-zoom-layer"
             style={{ transform: `translate(${size.width / 2}px, ${size.height / 2}px) scale(${zoom}) translate(${-size.width / 2}px, ${-size.height / 2}px)` }}
@@ -124,15 +144,9 @@ export default function FranceMap({
             {visibleGeojson.features.map((feature) => {
               const code = feature.properties.code;
               const name = feature.properties.nom;
-              const visitedByOne = Boolean(entries[code]?.[1]?.visited);
-              const visitedByTwo = Boolean(entries[code]?.[2]?.visited);
-              const visitClass = visitedByOne && visitedByTwo
-                ? " visited-both"
-                : visitedByOne
-                  ? " visited-user-one"
-                  : visitedByTwo
-                    ? " visited-user-two"
-                    : "";
+              const visitedSlots = profiles.filter((profile) => entries[code]?.[profile.slot]?.visited).map((profile) => profile.slot);
+              const visitClass = visitedSlots.length === 1 ? ` visited-user-${visitedSlots[0]}` : visitedSlots.length > 1 ? " visited-multiple" : "";
+              const mixedStyle = visitedSlots.length > 1 ? { fill: `url(#visit-gradient-${code})` } : undefined;
               const selected = selectedCode === code;
               const [x, y] = pathGenerator.centroid(feature);
               return (
@@ -140,6 +154,7 @@ export default function FranceMap({
                   <path
                     d={pathGenerator(feature)}
                     className={`department${visitClass}${selected ? " selected" : ""}`}
+                    style={mixedStyle}
                   >
                     <title>{code} — {name}</title>
                   </path>
