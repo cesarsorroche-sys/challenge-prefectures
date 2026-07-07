@@ -24,12 +24,12 @@
 .member-status > i { grid-row: 1 / 3; width: 9px; height: 9px; border-radius: 50%; background: #bdc5cf; }
 .member-status > span { overflow: hidden; color: #35465d; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .member-status > b { font-size: 8px; font-weight: 600; }
-.member-status.visited.slot-1 { background: #eff9f1; border-color: #b8ddc0; }
+.member-status.visited.slot-1 { background: #fff4e8; border-color: #f3c294; }
 .member-status.visited.slot-2 { background: #eff5fd; border-color: #bdd1ed; }
 .member-status.visited.slot-3 { background: #fff7ec; border-color: #f1c990; }
 .member-status.visited.slot-4 { background: #f6f1fd; border-color: #cfbfed; }
 .member-status.visited.slot-5 { background: #fdf0f6; border-color: #efbed4; }
-.member-status.visited.slot-1 > i { background: #58ad69; }
+.member-status.visited.slot-1 > i { background: #e67e22; }
 .member-status.visited.slot-2 > i { background: #558bce; }
 .member-status.visited.slot-3 > i { background: #d88935; }
 .member-status.visited.slot-4 > i { background: #8064bd; }
@@ -75,7 +75,7 @@
 .notes-card textarea::placeholder { color: #9aa6b5; }
 
 .teammate-contribution { padding: 12px; background: #f5f8fc; border-left: 3px solid #85afe8; border-radius: 7px; }
-.teammate-contribution.slot-1 { border-left-color: #94d2a0; }
+.teammate-contribution.slot-1 { border-left-color: #f29a4a; }
 .teammate-contribution.slot-2 { border-left-color: #85afe8; }
 .teammate-contribution.slot-3 { border-left-color: #f4b66d; }
 .teammate-contribution.slot-4 { border-left-color: #b49ae8; }
