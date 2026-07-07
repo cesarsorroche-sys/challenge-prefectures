@@ -19,13 +19,13 @@
   transition: fill .16s, stroke .16s, filter .16s;
 }
 .department-group:hover .department { fill: #dcecff; stroke: #2d6bb1; filter: drop-shadow(0 1px 1px rgba(24,71,122,.22)); }
-.department.visited-user-1 { fill: #94d2a0; stroke: #55a768; }
+.department.visited-user-1 { fill: #f29a4a; stroke: #d96b20; }
 .department.visited-user-2 { fill: #85afe8; stroke: #4d83ca; }
 .department.visited-user-3 { fill: #f4b66d; stroke: #d78a36; }
 .department.visited-user-4 { fill: #b49ae8; stroke: #8064bd; }
 .department.visited-user-5 { fill: #ed96bd; stroke: #c65b8d; }
 .department.visited-multiple { stroke: #2e6f72; }
-.gradient-slot-1 { stop-color: #94d2a0; }
+.gradient-slot-1 { stop-color: #f29a4a; }
 .gradient-slot-2 { stop-color: #85afe8; }
 .gradient-slot-3 { stop-color: #f4b66d; }
 .gradient-slot-4 { stop-color: #b49ae8; }
