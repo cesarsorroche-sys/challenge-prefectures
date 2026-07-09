@@ -73,6 +73,7 @@ async function refreshSession(session) {
 export async function bootstrapSession() {
   const hash = new URLSearchParams(window.location.hash.slice(1));
   if (hash.get("access_token")) {
+    const isPasswordRecovery = hash.get("type") === "recovery";
     const session = {
       access_token: hash.get("access_token"),
       refresh_token: hash.get("refresh_token"),
@@ -83,15 +84,20 @@ export async function bootstrapSession() {
     const normalized = normalizeSession(session);
     saveSession(normalized);
     window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
-    return normalized;
+    return { session: normalized, isPasswordRecovery };
   }
 
   const stored = readSession();
-  if (!stored) return null;
-  if (!stored.expires_at || stored.expires_at > Date.now() + 60_000) return stored;
-  return refreshSession(stored).catch(() => {
+  if (!stored) return { session: null, isPasswordRecovery: false };
+  if (!stored.expires_at || stored.expires_at > Date.now() + 60_000) {
+    return { session: stored, isPasswordRecovery: false };
+  }
+  return refreshSession(stored).then((session) => ({
+    session,
+    isPasswordRecovery: false,
+  })).catch(() => {
     saveSession(null);
-    return null;
+    return { session: null, isPasswordRecovery: false };
   });
 }
 
@@ -135,6 +141,22 @@ export async function signUpWithPassword(email, password, displayName) {
   }
 
   return { session: null, needsConfirmation: true };
+}
+
+export async function sendPasswordResetEmail(email) {
+  const redirect = encodeURIComponent(window.location.origin);
+  return request(`/auth/v1/recover?redirect_to=${redirect}`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  }, null);
+}
+
+export async function updatePassword(password) {
+  await request("/auth/v1/user", {
+    method: "PUT",
+    body: JSON.stringify({ password }),
+  });
+  return readSession();
 }
 
 export async function signOut() {
