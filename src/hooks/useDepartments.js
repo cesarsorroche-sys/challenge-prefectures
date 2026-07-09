@@ -4,8 +4,9 @@ import {
   bootstrapSession,
   database,
   isSupabaseConfigured,
-  sendMagicLink,
+  signInWithPassword as apiSignInWithPassword,
   signOut as apiSignOut,
+  signUpWithPassword as apiSignUpWithPassword,
   storage,
 } from "../lib/supabaseApi";
 
@@ -238,6 +239,21 @@ export default function useDepartments() {
     await loadRemoteData();
   }
 
+  async function loginWithPassword(email, password) {
+    const nextSession = await apiSignInWithPassword(email, password);
+    setSession(nextSession);
+    await loadRemoteData();
+  }
+
+  async function createAccountWithPassword(email, password, displayName) {
+    const result = await apiSignUpWithPassword(email, password, displayName);
+    if (result.session) {
+      setSession(result.session);
+      await loadRemoteData();
+    }
+    return result;
+  }
+
   return {
     entries,
     profiles,
@@ -258,7 +274,8 @@ export default function useDepartments() {
     authLoading,
     syncing,
     error,
-    sendMagicLink,
+    loginWithPassword,
+    createAccountWithPassword,
     logout,
   };
 }
