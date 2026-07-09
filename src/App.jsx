@@ -19,8 +19,18 @@ export default function App() {
     return <main className="app-loading"><span /><p>Connexion au challenge…</p></main>;
   }
 
-  if (challenge.isConfigured && !challenge.session && showLogin) {
-    return <AuthScreen onSendMagicLink={challenge.sendMagicLink} error={challenge.error} onBrowse={() => setShowLogin(false)} />;
+  if (challenge.isConfigured && ((!challenge.session && showLogin) || challenge.isPasswordRecovery)) {
+    return (
+      <AuthScreen
+        onLogin={challenge.loginWithPassword}
+        onCreateAccount={challenge.createAccountWithPassword}
+        onRequestPasswordReset={challenge.requestPasswordReset}
+        onUpdatePassword={challenge.updatePassword}
+        isPasswordRecovery={challenge.isPasswordRecovery}
+        error={challenge.error}
+        onBrowse={() => setShowLogin(false)}
+      />
+    );
   }
 
   const currentSlot = challenge.currentUser?.slot;
