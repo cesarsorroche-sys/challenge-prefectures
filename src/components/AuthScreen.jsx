@@ -10,16 +10,28 @@ function getFriendlyError(error) {
   return message || "Une erreur est survenue. Réessaie dans un instant.";
 }
 
-export default function AuthScreen({ onLogin, onCreateAccount, error, onBrowse }) {
+export default function AuthScreen({
+  onLogin,
+  onCreateAccount,
+  onRequestPasswordReset,
+  onUpdatePassword,
+  isPasswordRecovery = false,
+  error,
+  onBrowse,
+}) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const isSignup = mode === "signup";
+  const activeMode = isPasswordRecovery ? "update-password" : mode;
+  const isSignup = activeMode === "signup";
+  const isResetRequest = activeMode === "reset-request";
+  const isPasswordUpdate = activeMode === "update-password";
 
   async function submit(event) {
     event.preventDefault();
@@ -29,6 +41,20 @@ export default function AuthScreen({ onLogin, onCreateAccount, error, onBrowse }
 
     try {
       const cleanEmail = email.trim();
+
+      if (isResetRequest) {
+        await onRequestPasswordReset(cleanEmail);
+        setNotice("Si cette adresse correspond à un membre du challenge, un e-mail de réinitialisation vient d’être envoyé.");
+        return;
+      }
+
+      if (isPasswordUpdate) {
+        if (password.length < 8) throw new Error("Choisis un mot de passe d’au moins 8 caractères.");
+        if (password !== passwordConfirmation) throw new Error("Les deux mots de passe ne correspondent pas.");
+        await onUpdatePassword(password);
+        return;
+      }
+
       if (isSignup && password.length < 8) {
         throw new Error("Choisis un mot de passe d’au moins 8 caractères.");
       }
@@ -52,6 +78,20 @@ export default function AuthScreen({ onLogin, onCreateAccount, error, onBrowse }
     setMode(nextMode);
     setLocalError("");
     setNotice("");
+    setPassword("");
+    setPasswordConfirmation("");
+  }
+
+  function getSubmitLabel() {
+    if (loading) {
+      if (isResetRequest) return "Envoi…";
+      if (isPasswordUpdate) return "Enregistrement…";
+      return "Connexion…";
+    }
+    if (isResetRequest) return "Envoyer le lien de réinitialisation";
+    if (isPasswordUpdate) return "Enregistrer le nouveau mot de passe";
+    if (isSignup) return "Créer mon accès";
+    return "Se connecter";
   }
 
   return (
@@ -59,16 +99,30 @@ export default function AuthScreen({ onLogin, onCreateAccount, error, onBrowse }
       <section className="auth-card">
         <div className="auth-mark">📷</div>
         <p className="auth-kicker">Challenge collaboratif</p>
-        <h1>Préfectures de France</h1>
+        <h1>{isPasswordUpdate ? "Nouveau mot de passe" : "Préfectures de France"}</h1>
 
-        <div className="auth-tabs" role="tablist" aria-label="Mode de connexion">
-          <button type="button" className={!isSignup ? "active" : ""} onClick={() => switchMode("login")}>
-            Se connecter
-          </button>
-          <button type="button" className={isSignup ? "active" : ""} onClick={() => switchMode("signup")}>
-            Créer un accès
-          </button>
-        </div>
+        {!isPasswordUpdate && (
+          <div className="auth-tabs" role="tablist" aria-label="Mode de connexion">
+            <button type="button" className={activeMode === "login" ? "active" : ""} onClick={() => switchMode("login")}>
+              Se connecter
+            </button>
+            <button type="button" className={isSignup ? "active" : ""} onClick={() => switchMode("signup")}>
+              Créer un accès
+            </button>
+          </div>
+        )}
+
+        {isResetRequest && (
+          <p className="auth-intro">
+            Indique ton adresse e-mail : Supabase t’enverra un lien sécurisé pour choisir un nouveau mot de passe.
+          </p>
+        )}
+
+        {isPasswordUpdate && (
+          <p className="auth-intro">
+            Choisis ton nouveau mot de passe. Une fois enregistré, tu seras reconnecté au challenge.
+          </p>
+        )}
 
         <form onSubmit={submit}>
           {isSignup && (
@@ -77,42 +131,78 @@ export default function AuthScreen({ onLogin, onCreateAccount, error, onBrowse }
               <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Camille" required />
             </label>
           )}
-          <label>
-            Adresse e-mail
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="vous@exemple.fr"
-              autoComplete="email"
-              required
-            />
-          </label>
-          <label>
-            Mot de passe
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder={isSignup ? "8 caractères minimum" : "Votre mot de passe"}
-              autoComplete={isSignup ? "new-password" : "current-password"}
-              required
-            />
-          </label>
+
+          {!isPasswordUpdate && (
+            <label>
+              Adresse e-mail
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="vous@exemple.fr"
+                autoComplete="email"
+                required
+              />
+            </label>
+          )}
+
+          {!isResetRequest && (
+            <label>
+              {isPasswordUpdate ? "Nouveau mot de passe" : "Mot de passe"}
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={isSignup || isPasswordUpdate ? "8 caractères minimum" : "Votre mot de passe"}
+                autoComplete={isPasswordUpdate || isSignup ? "new-password" : "current-password"}
+                required
+              />
+            </label>
+          )}
+
+          {isPasswordUpdate && (
+            <label>
+              Confirmer le mot de passe
+              <input
+                type="password"
+                value={passwordConfirmation}
+                onChange={(event) => setPasswordConfirmation(event.target.value)}
+                placeholder="Répétez le nouveau mot de passe"
+                autoComplete="new-password"
+                required
+              />
+            </label>
+          )}
 
           {(localError || error) && <p className="auth-error">{localError || error}</p>}
           {notice && <p className="auth-notice">{notice}</p>}
 
           <button className="auth-submit" disabled={loading}>
-            {loading ? "Connexion…" : isSignup ? "Créer mon accès" : "Se connecter"}
+            {getSubmitLabel()}
           </button>
         </form>
 
-        <small>
-          Les cinq premiers comptes créés deviennent les membres du challenge. Les autres visiteurs peuvent
-          continuer en lecture seule.
-        </small>
-        <button className="auth-browse" type="button" onClick={onBrowse}>Continuer en lecture seule</button>
+        {activeMode === "login" && (
+          <button className="auth-link" type="button" onClick={() => switchMode("reset-request")}>
+            Mot de passe oublié ?
+          </button>
+        )}
+
+        {isResetRequest && (
+          <button className="auth-link" type="button" onClick={() => switchMode("login")}>
+            Retour à la connexion
+          </button>
+        )}
+
+        {!isPasswordUpdate && (
+          <>
+            <small>
+              Les cinq premiers comptes créés deviennent les membres du challenge. Les autres visiteurs peuvent
+              continuer en lecture seule.
+            </small>
+            <button className="auth-browse" type="button" onClick={onBrowse}>Continuer en lecture seule</button>
+          </>
+        )}
       </section>
     </main>
   );
