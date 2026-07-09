@@ -4,10 +4,12 @@ import {
   bootstrapSession,
   database,
   isSupabaseConfigured,
+  sendPasswordResetEmail as apiSendPasswordResetEmail,
   signInWithPassword as apiSignInWithPassword,
   signOut as apiSignOut,
   signUpWithPassword as apiSignUpWithPassword,
   storage,
+  updatePassword as apiUpdatePassword,
 } from "../lib/supabaseApi";
 
 const STORAGE_KEY = "challenge-prefectures-collab";
@@ -74,6 +76,7 @@ export default function useDepartments() {
   const [profiles, setProfiles] = useState(LOCAL_USERS);
   const [activeSlot, setActiveSlotState] = useState(() => Number(localStorage.getItem("challenge-active-slot")) || 1);
   const [session, setSession] = useState(null);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [authLoading, setAuthLoading] = useState(isSupabaseConfigured);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState("");
@@ -98,7 +101,10 @@ export default function useDepartments() {
   useEffect(() => {
     if (!isSupabaseConfigured) return undefined;
     bootstrapSession()
-      .then((nextSession) => setSession(nextSession))
+      .then(({ session: nextSession, isPasswordRecovery: passwordRecovery }) => {
+        setSession(nextSession);
+        setIsPasswordRecovery(passwordRecovery);
+      })
       .catch((authError) => setError(authError.message))
       .finally(() => setAuthLoading(false));
     return undefined;
@@ -254,6 +260,17 @@ export default function useDepartments() {
     return result;
   }
 
+  async function requestPasswordReset(email) {
+    await apiSendPasswordResetEmail(email);
+  }
+
+  async function updatePassword(password) {
+    const nextSession = await apiUpdatePassword(password);
+    setSession(nextSession);
+    setIsPasswordRecovery(false);
+    await loadRemoteData();
+  }
+
   return {
     entries,
     profiles,
@@ -271,11 +288,14 @@ export default function useDepartments() {
     isReadOnly: isSupabaseConfigured && !session,
     isConfigured: isSupabaseConfigured,
     session,
+    isPasswordRecovery,
     authLoading,
     syncing,
     error,
     loginWithPassword,
     createAccountWithPassword,
+    requestPasswordReset,
+    updatePassword,
     logout,
   };
 }
