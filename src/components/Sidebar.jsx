@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import "./Sidebar.css";
 import prefectures from "../data/prefectures";
 
@@ -12,6 +14,11 @@ function CameraIcon() {
 
 function initials(name = "?") {
   return name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+}
+
+function formatDate(date) {
+  if (!date) return "";
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T12:00:00`));
 }
 
 export default function Sidebar({
@@ -32,14 +39,45 @@ export default function Sidebar({
   isReadOnly,
   syncing,
 }) {
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
   const photos = Object.entries(entries).flatMap(([code, department]) =>
     profiles.flatMap((profile) => {
       const entry = department[profile.slot];
-      return entry?.photo ? [{ code, entry, profile }] : [];
+      if (!entry?.photo) return [];
+      const info = prefectures[code] || {};
+      return [{
+        code,
+        entry,
+        profile,
+        departmentName: info.department || code,
+        prefecture: info.prefecture || "",
+        date: entry.photoDate || entry.visitDate || "",
+      }];
     }),
-  );
+  ).sort((left, right) => (right.date || "").localeCompare(left.date || ""));
   const circumference = 2 * Math.PI * 63;
   const dashOffset = circumference * (1 - progress / 100);
+
+  useEffect(() => {
+    function closeOnEscape(event) {
+      if (event.key !== "Escape") return;
+      setSelectedPhoto(null);
+      setGalleryOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, []);
+
+  function openPhoto(photo) {
+    setSelectedPhoto(photo);
+  }
+
+  function selectDepartment(photo) {
+    onSelect({ code: photo.code, nom: photo.departmentName });
+    setGalleryOpen(false);
+    setSelectedPhoto(null);
+  }
 
   return (
     <aside className="sidebar">
@@ -116,15 +154,77 @@ export default function Sidebar({
             const photo = photos[index];
             if (!photo) return <div className="photo-empty" key={index} />;
             return (
-              <button className={`photo-thumb slot-${photo.profile.slot}`} key={`${photo.code}-${photo.profile.id}`} title={`${prefectures[photo.code]?.department} · ${photo.profile.display_name}`} onClick={() => onSelect({ code: photo.code, nom: prefectures[photo.code]?.department || photo.code })}>
-                <img src={photo.entry.photo} alt={prefectures[photo.code]?.department || "Préfecture"} />
+              <button
+                className={`photo-thumb slot-${photo.profile.slot}`}
+                key={`${photo.code}-${photo.profile.id}`}
+                type="button"
+                title={`${photo.departmentName} · ${photo.profile.display_name}`}
+                onClick={() => openPhoto(photo)}
+              >
+                <img src={photo.entry.photo} alt={`Photo de ${photo.departmentName}`} />
                 <i>{initials(photo.profile.display_name)}</i>
               </button>
             );
           })}
         </div>
-        <button className="photos-button" type="button">Voir toutes nos photos</button>
+        <button className="photos-button" type="button" disabled={!photos.length} onClick={() => setGalleryOpen(true)}>Voir toutes nos photos</button>
       </section>
+
+      {galleryOpen && (
+        <div className="photo-gallery-backdrop" role="dialog" aria-modal="true" aria-label="Toutes nos photos">
+          <section className="photo-gallery-modal">
+            <header className="photo-gallery-header">
+              <div>
+                <p>Galerie du challenge</p>
+                <h2>Toutes nos photos</h2>
+              </div>
+              <button type="button" aria-label="Fermer la galerie" onClick={() => setGalleryOpen(false)}>×</button>
+            </header>
+
+            {photos.length ? (
+              <div className="photo-gallery-grid">
+                {photos.map((photo) => (
+                  <article className={`photo-gallery-card slot-${photo.profile.slot}`} key={`${photo.code}-${photo.profile.id}-${photo.entry.photo}`}>
+                    <button type="button" className="photo-gallery-image" onClick={() => openPhoto(photo)}>
+                      <img src={photo.entry.photo} alt={`Photo de ${photo.departmentName}`} />
+                    </button>
+                    <div className="photo-gallery-copy">
+                      <strong>{photo.departmentName} <span>({photo.code})</span></strong>
+                      <p>{photo.prefecture ? `Préfecture : ${photo.prefecture}` : "Préfecture"}</p>
+                      <small>
+                        <i>{initials(photo.profile.display_name)}</i>
+                        {photo.profile.display_name}
+                        {photo.date && <span> · {formatDate(photo.date)}</span>}
+                      </small>
+                    </div>
+                    <button type="button" className="photo-gallery-department" onClick={() => selectDepartment(photo)}>
+                      Voir le département
+                    </button>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="photo-gallery-empty">Aucune photo pour le moment.</p>
+            )}
+          </section>
+        </div>
+      )}
+
+      {selectedPhoto && (
+        <div className="sidebar-photo-lightbox" role="dialog" aria-modal="true" aria-label="Photo en grand">
+          <button type="button" aria-label="Fermer la photo" onClick={() => setSelectedPhoto(null)}>×</button>
+          <figure>
+            <img src={selectedPhoto.entry.photo} alt={`Photo de ${selectedPhoto.departmentName}`} />
+            <figcaption>
+              <strong>{selectedPhoto.departmentName} <span>({selectedPhoto.code})</span></strong>
+              <small>
+                {selectedPhoto.profile.display_name}
+                {selectedPhoto.date && ` · ${formatDate(selectedPhoto.date)}`}
+              </small>
+            </figcaption>
+          </figure>
+        </div>
+      )}
     </aside>
   );
 }
