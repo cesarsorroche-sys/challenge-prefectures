@@ -22,14 +22,16 @@ Sans configuration Supabase, l'application démarre en mode démonstration. Les 
 
 1. Créer un projet gratuit sur https://supabase.com.
 2. Ouvrir **SQL Editor**, copier le contenu de `supabase/schema.sql`, puis l'exécuter.
-3. Dans **Authentication > URL Configuration**, ajouter :
+3. Dans **Authentication > Providers > Email**, activer la connexion par e-mail et mot de passe.
+   Pour éviter les liens de confirmation, désactiver **Confirm email**.
+4. Dans **Authentication > URL Configuration**, ajouter :
    - `http://localhost:5173` pour le développement ;
    - l'adresse Vercel définitive pour la production.
-4. Copier `.env.example` vers `.env.local`.
-5. Renseigner l'URL du projet et sa clé **Publishable** dans `.env.local`.
-6. Relancer `npm run dev`.
+5. Copier `.env.example` vers `.env.local`.
+6. Renseigner l'URL du projet et sa clé **Publishable** dans `.env.local`.
+7. Relancer `npm run dev`.
 
-Les deux premières personnes qui saisissent leur prénom et leur e-mail deviennent les deux membres du challenge. La base refuse automatiquement tout troisième compte.
+Les cinq premières personnes qui créent un accès avec prénom, e-mail et mot de passe deviennent les membres du challenge. Les autres visiteurs peuvent consulter le site en lecture seule.
 
 ## Mettre en ligne avec Vercel
 
