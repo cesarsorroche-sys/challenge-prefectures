@@ -20,11 +20,21 @@ function saveSession(session) {
   else localStorage.removeItem(sessionKey);
 }
 
+function normalizeSession(session) {
+  const source = session?.session || session;
+  if (!source?.access_token) return null;
+  return {
+    ...source,
+    expires_at: source.expires_at || Date.now() + Number(source.expires_in || 3600) * 1000,
+    user: source.user || session?.user || decodeUser(source.access_token),
+  };
+}
+
 export function readSession() {
   try {
     const session = JSON.parse(localStorage.getItem(sessionKey) || "null");
     if (!session?.access_token) return null;
-    return { ...session, user: decodeUser(session.access_token) };
+    return normalizeSession(session);
   } catch {
     return null;
   }
@@ -55,9 +65,9 @@ async function refreshSession(session) {
     { method: "POST", body: JSON.stringify({ refresh_token: session.refresh_token }) },
     null,
   );
-  const normalized = { ...next, expires_at: Date.now() + next.expires_in * 1000 };
+  const normalized = normalizeSession(next);
   saveSession(normalized);
-  return { ...normalized, user: decodeUser(normalized.access_token) };
+  return normalized;
 }
 
 export async function bootstrapSession() {
@@ -70,9 +80,10 @@ export async function bootstrapSession() {
       expires_at: Date.now() + Number(hash.get("expires_in") || 3600) * 1000,
       token_type: hash.get("token_type") || "bearer",
     };
-    saveSession(session);
+    const normalized = normalizeSession(session);
+    saveSession(normalized);
     window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
-    return { ...session, user: decodeUser(session.access_token) };
+    return normalized;
   }
 
   const stored = readSession();
@@ -94,6 +105,36 @@ export async function sendMagicLink(email, displayName) {
       data: { display_name: displayName.trim() || email.split("@")[0] },
     }),
   }, null);
+}
+
+export async function signInWithPassword(email, password) {
+  const session = await request(
+    "/auth/v1/token?grant_type=password",
+    { method: "POST", body: JSON.stringify({ email, password }) },
+    null,
+  );
+  const normalized = normalizeSession(session);
+  saveSession(normalized);
+  return normalized;
+}
+
+export async function signUpWithPassword(email, password, displayName) {
+  const response = await request("/auth/v1/signup", {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      password,
+      data: { display_name: displayName.trim() || email.split("@")[0] },
+    }),
+  }, null);
+
+  const session = normalizeSession(response);
+  if (session) {
+    saveSession(session);
+    return { session, needsConfirmation: false };
+  }
+
+  return { session: null, needsConfirmation: true };
 }
 
 export async function signOut() {
