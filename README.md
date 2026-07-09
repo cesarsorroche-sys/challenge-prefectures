@@ -33,6 +33,8 @@ Sans configuration Supabase, l'application démarre en mode démonstration. Les 
 
 Les cinq premières personnes qui créent un accès avec prénom, e-mail et mot de passe deviennent les membres du challenge. Les autres visiteurs peuvent consulter le site en lecture seule.
 
+L'écran de connexion contient aussi un lien **Mot de passe oublié ?**. Il envoie un e-mail de réinitialisation via Supabase, puis le lien reçu renvoie vers le site pour choisir un nouveau mot de passe.
+
 ## Mettre en ligne avec Vercel
 
 1. Envoyer ce dossier dans un dépôt GitHub.
